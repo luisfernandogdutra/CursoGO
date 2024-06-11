@@ -10,7 +10,7 @@ import (
 	"os"
 	"time"
 
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -52,7 +52,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func requestCotacao() string {
-	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Minute)
 	defer cancel()
 
 	req, err := http.NewRequest("GET", "https://economia.awesomeapi.com.br/json/last/USD-BRL/", nil)
@@ -98,8 +98,7 @@ func requestCotacao() string {
 func salvaCotacao(financial FinancialQuote) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
 	defer cancel()
-	dsn := "root:root@tcp(localhost:3306)/goexpert?charset=utf8mb4&parseTime=True&loc=Local"
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
 	if err != nil {
 		log.Println("Erro ao conectar no banco de dados")
 		panic(err)
