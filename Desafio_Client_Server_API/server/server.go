@@ -52,7 +52,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 }
 
 func requestCotacao() string {
-	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Minute)
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 	defer cancel()
 
 	req, err := http.NewRequest("GET", "https://economia.awesomeapi.com.br/json/last/USD-BRL/", nil)
@@ -96,17 +96,23 @@ func requestCotacao() string {
 }
 
 func salvaCotacao(financial FinancialQuote) {
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
-	defer cancel()
 	db, err := gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
 	if err != nil {
 		log.Println("Erro ao conectar no banco de dados")
 		panic(err)
 	}
-	db.AutoMigrate(&Cotation{})
+	err = db.AutoMigrate(&Cotation{})
+	if err != nil {
+		panic(err)
+	}
 
-	db.Create(&Cotation{
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
+	defer cancel()
+
+	cotation := &Cotation{
 		Value: financial.Usdbrl.Bid,
 		Date:  financial.Usdbrl.CreateDate,
-	}).WithContext(ctx)
+	}
+
+	db.Session(&gorm.Session{SkipDefaultTransaction: true, Context: ctx}).Create(cotation)
 }
