@@ -16,9 +16,8 @@ func TestCreateUser(t *testing.T) {
 	}
 	db.AutoMigrate(&entity.User{})
 	user, _ := entity.AddUser("Luis", "l@l.com", "123456")
-	userDB := AddUser(db)
-
-	err = userDB.CreateUser(user)
+	userDB := NewUser(db)
+	err = userDB.Create(user)
 	assert.Nil(t, err)
 
 	var userFound entity.User
@@ -37,9 +36,9 @@ func TestFindByEmail(t *testing.T) {
 	}
 	db.AutoMigrate(&entity.User{})
 	user, _ := entity.AddUser("Jhon", "j@j.com", "123456")
-	userDB := AddUser(db)
+	userDB := NewUser(db)
 
-	err = userDB.CreateUser(user)
+	err = userDB.Create(user)
 	assert.Nil(t, err)
 
 	userFound, err := userDB.FindByEmail(user.Email)
