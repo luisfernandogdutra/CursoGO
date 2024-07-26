@@ -8,9 +8,11 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/jwtauth"
 	"github.com/luisfernandogdutra/CursoGO/APIS/configs"
+	_ "github.com/luisfernandogdutra/CursoGO/APIS/docs"
 	"github.com/luisfernandogdutra/CursoGO/APIS/internal/entity"
 	"github.com/luisfernandogdutra/CursoGO/APIS/internal/infra/database"
 	"github.com/luisfernandogdutra/CursoGO/APIS/internal/infra/webserver/handlers"
+	httpSwagger "github.com/swaggo/http-swagger"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
@@ -21,11 +23,19 @@ import (
 // @termsOfService  http://swagger.io/terms/
 
 // @contact.name   Luis Dutra
+<<<<<<< HEAD
 // @contact.url    http://www.fullcycle.com.br
 // @contact.email  luis.dutra@gmail.com.br
 
 // @license.name   Full Cycle License
 // @license.url    http://www.fullcycle.com.br
+=======
+// @contact.url    https://www.linkedin.com/in/luisfernandodutra/
+// @contact.email  luisfgdutra@gmail.com.br
+
+// @license.name   LFGD License
+// @license.url    https://www.linkedin.com/in/luisfernandodutra/
+>>>>>>> 705f352 (adicionado swagger)
 
 // @host      localhost:8000
 // @BasePath  /
@@ -52,7 +62,11 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Use(middleware.Recoverer)
 	r.Use(middleware.WithValue("jwt", configs.TokenAuth))
+<<<<<<< HEAD
 	r.Use(middleware.WithValue("JWTExpiresIn", configs.JWTExpiresIn))
+=======
+	r.Use(middleware.WithValue("JwtExperesIn", configs.JWTExpiresIn))
+>>>>>>> 705f352 (adicionado swagger)
 
 	r.Route("/products", func(r chi.Router) {
 		r.Use(jwtauth.Verifier(configs.TokenAuth))
@@ -66,6 +80,8 @@ func main() {
 
 	r.Post("/users", userHandler.Create)
 	r.Post("/users/generate_token", userHandler.GetJWT)
+
+	r.Get("/docs/*", httpSwagger.Handler(httpSwagger.URL("http://localhost:8000/docs/doc.json")))
 
 	http.ListenAndServe(":8000", r)
 }
