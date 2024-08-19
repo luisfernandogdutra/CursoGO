@@ -1,9 +1,11 @@
-package main
+package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
 	"sync/atomic"
 	"time"
 )
@@ -14,37 +16,55 @@ type Message struct {
 }
 
 func main() {
+	http.HandleFunc("/", BuscaCEPHandler)
+	http.ListenAndServe(":8080", nil)
+}
+
+func BuscaCEPHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+	cepParam := r.URL.Query().Get("cep")
+	if cepParam == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
 	c1 := make(chan Message)
 	c2 := make(chan Message)
 	var i int64 = 0
-	// RabbitMQ
+	var retorno string
+
 	go func() {
 		for {
 			atomic.AddInt64(&i, 1)
-			msg := Message{i, BuscaViaCep("01153000")}
+			msg := Message{i, BuscaBrasilApi(cepParam)}
 			c1 <- msg
 		}
 	}()
 
-	// Kafka
 	go func() {
 		for {
 			atomic.AddInt64(&i, 1)
-			msg := Message{i, BuscaBrasilApi("01153000")}
+			msg := Message{i, BuscaViaCep(cepParam)}
 			c2 <- msg
 		}
 	}()
 
 	select {
 	case msg := <-c1: // brasilapi
-		fmt.Printf("Received from brasilapi: ID: %d - %s\n", msg.id, msg.Msg)
-
+		retorno = "Received from brasilapi: ID: " + strconv.FormatInt(msg.id, 10) + " - " + msg.Msg
 	case msg := <-c2: // viacep
-		fmt.Printf("Received from viacep: ID: %d - %s\n", msg.id, msg.Msg)
-
+		retorno = "Received from viacep: ID: " + strconv.FormatInt(msg.id, 10) + " - " + msg.Msg
 	case <-time.After(time.Second * 1):
-		println("timeout")
+		retorno = "timeout"
 	}
+
+	fmt.Printf(retorno)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(retorno)
 }
 
 func BuscaViaCep(cep string) string {
