@@ -1,0 +1,16 @@
+# Etapa 1: Construção do binário
+FROM golang:1.20 AS builder
+
+WORKDIR /app
+COPY . .
+
+RUN go mod tidy
+RUN go build -o loadtest .
+
+# Etapa 2: Executar o binário
+FROM alpine:latest
+
+WORKDIR /root/
+COPY --from=builder /app/loadtest .
+
+CMD ["./loadtest"]
