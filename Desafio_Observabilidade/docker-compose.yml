@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+  service-a:
+    build: ./serviceA
+    ports:
+      - "8080:8080"
+    environment:
+      - ZIPKIN_ENDPOINT=http://zipkin:9411/api/v2/spans
+
+  service-b:
+    build: ./serviceB
+    ports:
+      - "8081:8081"
+    environment:
+      - ZIPKIN_ENDPOINT=http://zipkin:9411/api/v2/spans
+
+  otel-collector:
+    image: otel/opentelemetry-collector
+    ports:
+      - "4317:4317"
+
+  zipkin:
+    image: openzipkin/zipkin
+    ports:
+      - "9411:9411"
