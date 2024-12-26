@@ -32,7 +32,7 @@ func getCityFromCEP(cep string) (string, error) {
 		return "", errors.New("CEP inválido")
 	}
 
-	url := fmt.Sprintf("https://viacep.com.br/ws/%s/json/", cep)
+	url := fmt.Sprintf("http://viacep.com.br/ws/%s/json/", cep)
 	resp, err := http.Get(url)
 	if err != nil {
 		return "", fmt.Errorf("erro ao consultar o CEP: %v", err)
